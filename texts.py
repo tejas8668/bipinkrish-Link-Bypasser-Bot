@@ -128,7 +128,7 @@ freewalltext = """__- shutterstock \n\
 - medium \n\
     __"""
 
-shortlinks = """__- Gyanlinks \n\
+shortlinks = """__- Gyanlinks ( gtlinks.me ) \n\
 - Krownlinks \n\
 - kingurl \n\
 - runurl \n\
