@@ -2613,17 +2613,17 @@ def earn4link(url):
     url = url[:-1] if url[-1] == "/" else url
     code = url.split("/")[-1]
     final_url = f"{DOMAIN}/{code}"
-    ref = "https://loankhabri.com/"
+    ref = "https://ghindi.in/"
     h = {"referer": ref}
-    response = client.get(final_url, headers=h)
-    soup = BeautifulSoup(response.text, "html.parser")
+    resp = client.get(final_url, headers=h)
+    soup = BeautifulSoup(resp.content, "html.parser")
     inputs = soup.find_all("input")
     data = {input.get("name"): input.get("value") for input in inputs}
     h = {"x-requested-with": "XMLHttpRequest"}
-    time.sleep(9)
+    time.sleep(7)
     r = client.post(f"{DOMAIN}/links/go", data=data, headers=h)
     try:
-        return r.json()["url"]
+        return str(r.json()["url"])
     except BaseException:
         return "Something went wrong, Please try again"
 
