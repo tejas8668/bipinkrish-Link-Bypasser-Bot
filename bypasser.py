@@ -2593,7 +2593,7 @@ def primeurl(url):
     url = url[:-1] if url[-1] == "/" else url
     code = url.split("/")[-1]
     final_url = f"{DOMAIN}/{code}"
-    ref = "https://loan.bgmiupdate.com.in/"
+    ref = "https://earn.punjabworks.com/"
     h = {"referer": ref}
     resp = client.get(final_url, headers=h)
     soup = BeautifulSoup(resp.content, "html.parser")
@@ -2605,7 +2605,7 @@ def primeurl(url):
     try:
         return str(r.json()["url"])
     except BaseException:
-        return "Something went wrong :("
+        return "Something went wrong, Please try again"
 
 def earn4link(url):
     client = cloudscraper.create_scraper(allow_brotli=False)
