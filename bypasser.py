@@ -2608,24 +2608,47 @@ def primeurl(url):
         return "Something went wrong, Please try again"
 
 def earn4link(url):
-    client = cloudscraper.create_scraper(allow_brotli=False)
-    DOMAIN = "https://m.open2get.in/"
+    # Cloudflare bypass के लिए scraper बनाएं
+    client = cloudscraper.create_scraper(
+        browser={
+            'browser': 'chrome',
+            'platform': 'windows',
+            'desktop': True
+        },
+        allow_brotli=False,
+        debug=True  # Cloudflare bypass के लिए debug मोड
+    )
+    
+    DOMAIN = "https://m.open2get.in"
     url = url[:-1] if url[-1] == "/" else url
     code = url.split("/")[-1]
     final_url = f"{DOMAIN}/{code}"
-    ref = "https://ghindi.in/"
+    ref = "https://m.reet2024.org/"
+    
     h = {"referer": ref}
-    resp = client.get(final_url, headers=h)
-    soup = BeautifulSoup(resp.content, "html.parser")
-    inputs = soup.find_all("input")
-    data = {input.get("name"): input.get("value") for input in inputs}
-    h = {"x-requested-with": "XMLHttpRequest"}
-    time.sleep(7)
-    r = client.post(f"{DOMAIN}/links/go", data=data, headers=h)
+    
     try:
-        return str(r.json()["url"])
-    except BaseException:
-        return "Something went wrong, Please try again"
+        resp = client.get(final_url, headers=h)
+        
+        soup = BeautifulSoup(resp.content, "html.parser")
+        inputs = soup.find_all("input")
+        data = {input.get("name"): input.get("value") for input in inputs}
+        
+        h = {
+            "x-requested-with": "XMLHttpRequest",
+            "referer": final_url,
+            "user-agent": client.headers["User-Agent"]
+        }
+        
+        time.sleep(7)
+        
+        r = client.post(f"{DOMAIN}/links/go", data=data, headers=h)
+        
+        result = r.json()
+        return str(result["url"])
+    
+    except Exception as e:
+        return f"Something went wrong: {str(e)}"
 
 #tryshort.in
 def tryshort(url):
