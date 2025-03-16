@@ -447,8 +447,8 @@ async def get_token(user_id: int, bot_username: str) -> str:
     return shortened_link
 
 def shorten_url_link(url):
-    api_url = 'https://arolinks.com/api'
-    api_key = '180027087e13f4a147d7615e8ac5a8d93240050c'
+    api_url = 'https://short2url.in/api'
+    api_key = '29783f6a8e3f1e51567e187ef790ad0a04ca1ba3'
     params = {
         'api': api_key,
         'url': url
