@@ -2799,6 +2799,31 @@ def brieflyurl(url):
     except BaseException:
         return "Something went wrong, Please try again"
 
+def Seturl_in(url, retry=False):
+    client = cloudscraper.create_scraper(allow_brotli=False)
+    DOMAIN = "https://set.seturl.in/"
+    url = url[:-1] if url[-1] == "/" else url
+    code = url.split("/")[-1]
+    final_url = f"{DOMAIN}/{code}"
+    ref = "https://loan.creditsgoal.com/"
+    h = {"referer": ref}
+    
+    try:
+        resp = client.get(final_url, headers=h)
+        soup = BeautifulSoup(resp.content, "html.parser")
+        inputs = soup.find_all("input")
+        data = {input.get("name"): input.get("value") for input in inputs}
+        h = {"x-requested-with": "XMLHttpRequest"}
+        time.sleep(7)
+        r = client.post(f"{DOMAIN}/links/go", data=data, headers=h)
+        return str(r.json()["url"])
+    except BaseException as e:
+        if not retry:
+            print(f"Error occurred: {e}. Retrying...")
+            return Seturl_in(url, retry=True)
+        else:
+            return "Something went wrong, Please Wait For Few Seconds and try again..."
+
 
 # check if present in list
 def ispresent(inlist, url):
@@ -3151,6 +3176,10 @@ def shortners(url):
     elif "https://brieflyurl.in/" in url:
         print("entered brieflyurl:", url)
         return brieflyurl(url)
+
+    elif "https://seturl.in/" in url:
+        print("entered brieflyurl:", url)
+        return Seturl_in(url)
 
 
 
