@@ -142,6 +142,7 @@ shortlinks = """__- Gyanlinks ( gtlinks.me ) \n\
 - shortxpro \n\
 - rglinks \n\
 - brieflyurl \n\
+- Seturl.in \n\
     __"""
 
 
