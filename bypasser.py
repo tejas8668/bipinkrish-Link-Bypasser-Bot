@@ -1977,7 +1977,7 @@ def krownlinks(url):
     url = url[:-1] if url[-1] == "/" else url
     code = url.split("/")[-1]
     final_url = f"{DOMAIN}/{code}"
-    ref = "https://www.techkhulasha.com/"
+    ref = "https://blog.anyrorgujaratonline.in/"
     h = {"referer": ref}
     resp = client.get(final_url, headers=h)
     soup = BeautifulSoup(resp.content, "html.parser")
@@ -1989,9 +1989,7 @@ def krownlinks(url):
     try:
         return str(r.json()["url"])
     except BaseException:
-        return "Something went wrong :("
-
-
+        return "Something went wrong, Please Wait For Few Seconds and try again..."
 ####################################################################################################
 # adrinolink
 
@@ -2481,7 +2479,7 @@ def kingurl(url, retry=False):
     url = url[:-1] if url[-1] == "/" else url
     code = url.split("/")[-1]
     final_url = f"{DOMAIN}/{code}"
-    ref = "https://rg.freshbhojpuri.com/"
+    ref = "https://trust.bgmi32bitapk.in/"
     h = {"referer": ref}
     
     try:
@@ -2498,8 +2496,7 @@ def kingurl(url, retry=False):
             print(f"Error occurred: {e}. Retrying...")
             return kingurl(url, retry=True)
         else:
-            return "Something went wrong, Please try again..."
-
+            return "Something went wrong, Please Wait For Few Seconds and try again..."
 
 '''def kingurl(url):
     DOMAIN = "https://earn.bankshiksha.in/click.php?LinkShortUrlID"
@@ -2605,50 +2602,34 @@ def primeurl(url):
     try:
         return str(r.json()["url"])
     except BaseException:
-        return "Something went wrong, Please try again"
+        return "Something went wrong, Please Wait For Few Seconds and try again..."
 
-def earn4link(url):
-    # Cloudflare bypass के लिए scraper बनाएं
-    client = cloudscraper.create_scraper(
-        browser={
-            'browser': 'chrome',
-            'platform': 'windows',
-            'desktop': True
-        },
-        allow_brotli=False,
-        debug=True  # Cloudflare bypass के लिए debug मोड
-    )
-    
-    DOMAIN = "https://m.open2get.in"
+
+def earn4link(url, retry=False):
+    client = cloudscraper.create_scraper(allow_brotli=False)
+    DOMAIN = "https://m.open2get.in/"
     url = url[:-1] if url[-1] == "/" else url
     code = url.split("/")[-1]
     final_url = f"{DOMAIN}/{code}"
-    ref = "https://m.reet2024.org/"
-    
+    ref = "https://m.crictak.in/"
     h = {"referer": ref}
     
     try:
         resp = client.get(final_url, headers=h)
-        
         soup = BeautifulSoup(resp.content, "html.parser")
         inputs = soup.find_all("input")
         data = {input.get("name"): input.get("value") for input in inputs}
-        
-        h = {
-            "x-requested-with": "XMLHttpRequest",
-            "referer": final_url,
-            "user-agent": client.headers["User-Agent"]
-        }
-        
+        h = {"x-requested-with": "XMLHttpRequest"}
         time.sleep(7)
-        
         r = client.post(f"{DOMAIN}/links/go", data=data, headers=h)
-        
-        result = r.json()
-        return str(result["url"])
-    
-    except Exception as e:
-        return f"Something went wrong: {str(e)}"
+        return str(r.json()["url"])
+    except BaseException as e:
+        if not retry:
+            print(f"Error occurred: {e}. Retrying...")
+            return earn4link(url, retry=True)
+        else:
+            return "Something went wrong, Please Wait For Few Seconds and try again..."
+
 
 #tryshort.in
 def tryshort(url):
