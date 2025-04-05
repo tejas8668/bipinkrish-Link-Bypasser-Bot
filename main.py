@@ -509,14 +509,30 @@ def shorten_url_link(url):
         'api': api_key,
         'url': url
     }
-    # Yahan pe custom certificate bundle ka path specify karo
-    response = requests.get(api_url, params=params, verify=False)
-    if response.status_code == 200:
-        data = response.json()
-        if data['status'] == 'success':
-            logger.info(f"Adrinolinks shortened URL: {data['shortenedUrl']}")
-            return data['shortenedUrl']
-    logger.error(f"Failed to shorten URL with Adrinolinks: {url}")
+    
+    try:
+        # Use custom certificate bundle for SSL verification
+        cert_path = os.path.join("certificates", "ca-bundle.crt")
+        
+        # Check if certificate file exists
+        if os.path.exists(cert_path):
+            # Set verify to the custom certificate bundle path
+            response = requests.get(api_url, params=params, verify=cert_path)
+        else:
+            logger.warning(f"Certificate file not found at {cert_path}, using default verification")
+            response = requests.get(api_url, params=params)
+            
+        if response.status_code == 200:
+            data = response.json()
+            if data['status'] == 'success':
+                logger.info(f"Arolinks shortened URL: {data['shortenedUrl']}")
+                return data['shortenedUrl']
+    except requests.exceptions.SSLError as ssl_error:
+        logger.error(f"SSL Certificate error: {ssl_error}")
+    except Exception as e:
+        logger.error(f"Error shortening URL: {e}")
+    
+    logger.error(f"Failed to shorten URL with Arolinks: {url}")
     return url
 
 
