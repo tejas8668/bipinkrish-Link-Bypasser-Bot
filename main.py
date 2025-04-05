@@ -61,7 +61,7 @@ with app:
         [
             BotCommand("start", "Welcome Message"),
             BotCommand("help", "List of All Supported Sites"),
-            BotCommand("token", "Check Your Token Status"),
+            BotCommand("get_token", "Check Your Token Status"),
         ]
     )
 
@@ -224,9 +224,18 @@ def loopthread(message: Message, otherss=False):
 async def send_start(client: Client, message: Message):
     user = message.from_user
 
-    # Check if the start command includes a token (for verification)
+    # Check if the start command includes a parameter
     if message.command and len(message.command) > 1:
-        token = message.command[1]
+        parameter = message.command[1]
+        
+        # Check for get_token parameter
+        if parameter == "get_token":
+            # Redirect to get_token command
+            await get_token_command(client, message)
+            return
+        
+        # Handle token verification
+        token = parameter
         user_data = users_collection.find_one({"user_id": user.id, "token": token})
 
         if user_data:
@@ -256,7 +265,7 @@ async def send_start(client: Client, message: Message):
             )
         return
     
-    # If no token, send the welcome message and store user ID in MongoDB
+    # If no parameter, send the welcome message and store user ID in MongoDB
     users_collection.update_one(
         {"user_id": user.id},
         {"$set": {"username": user.username, "first_name": user.first_name, "last_name": user.last_name}},
@@ -294,7 +303,7 @@ async def send_start(client: Client, message: Message):
             ]
         ),
         reply_to_message_id=message.id,
-    )                
+    )
 
 
 # help command
@@ -348,8 +357,8 @@ async def stats(client: Client, message: Message):
         await message.reply_text("You have no rights to use my commands.")
         
 # token command
-@app.on_message(filters.command(["token"]))
-async def token_command(client: Client, message: Message):
+@app.on_message(filters.command(["get_token"]))
+async def get_token_command(client: Client, message: Message):
     user_id = message.from_user.id
     user_data = users_collection.find_one({"user_id": user_id})
     
@@ -487,8 +496,8 @@ async def get_token(user_id: int, bot_username: str) -> str:
         {"$set": {"token": token, "token_expiration": token_expiration, "verified_until": datetime.min}},  # Reset verified_until to min
         upsert=True
     )
-    # Create verification link
-    verification_link = f"https://telegram.me/{bot_username}?start={token}"
+    # Create verification link with get_token parameter for direct token display
+    verification_link = f"https://telegram.me/{bot_username}?start=get_token"
     # Shorten verification link using shorten_url_link function
     shortened_link = shorten_url_link(verification_link)
     return shortened_link
