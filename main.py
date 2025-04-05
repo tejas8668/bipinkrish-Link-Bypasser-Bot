@@ -545,8 +545,8 @@ async def get_token(user_id: int, bot_username: str) -> str:
         return verification_link
 
 def shorten_url_link(url):
-    api_url = 'https://adlinkfly.in/api'
-    api_key = '517af4c4953d46b68dd240cfd168fe27b49a58ad'
+    api_url = 'https://adrinolinks.in/api'
+    api_key = '599ee2c148d46fe9061578db049f3cd32f528bf6'
     params = {
         'api': api_key,
         'url': url
