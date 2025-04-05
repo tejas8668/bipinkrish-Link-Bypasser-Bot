@@ -360,11 +360,15 @@ async def token_command(client: Client, message: Message):
         hours, remainder = divmod(time_left.seconds, 3600)
         minutes, seconds = divmod(remainder, 60)
         
+        # Get the user's token
+        user_token = user_data.get("token", "Not found")
+        
         await message.reply_text(
             f"✅ **You have a valid token!**\n\n"
             f"Your token is active and will expire on:\n"
             f"📅 {verified_until.strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-            f"⏱️ Time remaining: {time_left.days} days, {hours} hours, {minutes} minutes"
+            f"⏱️ Time remaining: {time_left.days} days, {hours} hours, {minutes} minutes\n\n"
+            f"🔑 Your token: `{user_token}`"
         )
     else:
         # User needs to verify
@@ -490,8 +494,8 @@ async def get_token(user_id: int, bot_username: str) -> str:
     return shortened_link
 
 def shorten_url_link(url):
-    api_url = 'https://arolinks.com/api'
-    api_key = '180027087e13f4a147d7615e8ac5a8d93240050c'
+    api_url = 'https://adlinkfly.in/api'
+    api_key = '517af4c4953d46b68dd240cfd168fe27b49a58ad'
     params = {
         'api': api_key,
         'url': url
