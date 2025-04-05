@@ -223,19 +223,23 @@ def loopthread(message: Message, otherss=False):
 @app.on_message(filters.command(["start"]))
 async def send_start(client: Client, message: Message):
     user = message.from_user
+    logger.info(f"Start command received from user {user.id} ({user.first_name})")
 
     # Check if the start command includes a parameter
     if message.command and len(message.command) > 1:
         parameter = message.command[1]
+        logger.info(f"Start command parameter: {parameter}")
         
         # Check for get_token parameter
         if parameter == "get_token":
+            logger.info(f"Redirecting to get_token command for user {user.id}")
             # Redirect to get_token command
             await get_token_command(client, message)
             return
         
         # Handle token verification
         token = parameter
+        logger.info(f"Attempting to verify token: {token[:6]}... for user {user.id}")
         user_data = users_collection.find_one({"user_id": user.id, "token": token})
 
         if user_data:
@@ -243,22 +247,26 @@ async def send_start(client: Client, message: Message):
             token_expiration = user_data.get("token_expiration", datetime.min)
             if token_expiration > datetime.now():
                 # Update the user's verification status
+                verified_until = datetime.now() + timedelta(days=1)
                 users_collection.update_one(
                     {"user_id": user.id},
-                    {"$set": {"verified_until": datetime.now() + timedelta(days=1)}},
+                    {"$set": {"verified_until": verified_until}},
                     upsert=True
                 )
+                logger.info(f"User {user.id} successfully verified until {verified_until}")
                 await message.reply_text(
                     f"✅ **Verification Successful!**\n\n"
                     f"You can now use the bot for the next 24 hours without any ads or restrictions.\n"
-                    f"Your token will expire on: {token_expiration.strftime('%Y-%m-%d %H:%M:%S')}"
+                    f"Your verification will expire on: {verified_until.strftime('%Y-%m-%d %H:%M:%S')}"
                 )
             else:
+                logger.warning(f"User {user.id} tried to use expired token")
                 await message.reply_text(
                     "❌ **Token Expired!**\n\n"
                     "Please generate a new token and try verifying again."
                 )
         else:
+            logger.warning(f"User {user.id} tried to use invalid token: {token[:6]}...")
             await message.reply_text(
                 "❌ **Invalid Token!**\n\n"
                 "Please try verifying again."
@@ -271,6 +279,7 @@ async def send_start(client: Client, message: Message):
         {"$set": {"username": user.username, "first_name": user.first_name, "last_name": user.last_name}},
         upsert=True
     )
+    logger.info(f"Sending welcome message to user {user.id}")
     await app.send_message(
         message.chat.id,
         f"__👋 Hi **{message.from_user.mention}**, I am Link Bypasser Bot. Just send me any supported links and I will get you results.\nCheckout /help to read more.\n\nIf you face any issue with some sites please report error, We solve it as soon as possible.__",
@@ -451,38 +460,58 @@ async def broadcast(client: Client, message: Message):
 @app.on_message(filters.text)
 async def receive(client: Client, message: Message):
     user = message.from_user
+    logger.info(f"Received message from user {user.id}: {message.text[:20]}...")
 
     # Check if user is admin
     if user.id in admin_ids:
+        logger.info(f"User {user.id} is admin, bypassing verification")
         # Admin does not need verification
         pass
     else:
         # User needs verification
-        if not await check_verification(user.id):
+        verification_status = await check_verification(user.id)
+        if not verification_status:
+            logger.info(f"User {user.id} needs verification, sending token link")
             # User needs to verify
-            btn = [
-                [InlineKeyboardButton("Verify", url=await get_token(user.id, (await client.get_me()).username))],
-                [InlineKeyboardButton("How To Open Link & Verify", url="https://t.me/how_to_download_0011")]
-            ]
-            await message.reply_text(
-                text="🚨 Token Expired!\n\n"
-                     "Timeout: 24 hours\n\n"
-                     "Your access token has expired. Verify it to continue using the bot!\n\n"
-                     "🔑 Why Tokens?\n\n"
-                     "Tokens unlock premium features with a quick ad process. Enjoy 24 hours of uninterrupted access! 🌟\n\n"
-                     "👉 Tap below to verify your token.\n\n"
-                     "Thank you for your support! ❤️",
-                reply_markup=InlineKeyboardMarkup(btn)
-            )
-            return
+            try:
+                bot_username = (await client.get_me()).username
+                token_url = await get_token(user.id, bot_username)
+                
+                btn = [
+                    [InlineKeyboardButton("Verify", url=token_url)],
+                    [InlineKeyboardButton("How To Open Link & Verify", url="https://t.me/how_to_download_0011")]
+                ]
+                
+                await message.reply_text(
+                    text="🚨 Token Expired!\n\n"
+                         "Timeout: 24 hours\n\n"
+                         "Your access token has expired. Verify it to continue using the bot!\n\n"
+                         "🔑 Why Tokens?\n\n"
+                         "Tokens unlock premium features with a quick ad process. Enjoy 24 hours of uninterrupted access! 🌟\n\n"
+                         "👉 Tap below to verify your token.\n\n"
+                         "Thank you for your support! ❤️",
+                    reply_markup=InlineKeyboardMarkup(btn)
+                )
+                return
+            except Exception as e:
+                logger.error(f"Error while sending verification message: {e}")
+                await message.reply_text("An error occurred. Please try again later or contact the bot admin.")
+                return
+    
     # Proceed with the bypass process
+    logger.info(f"Processing links for user {user.id}")
     bypass = Thread(target=lambda: loopthread(message), daemon=True)
     bypass.start()
 
 async def check_verification(user_id: int) -> bool:
     user = users_collection.find_one({"user_id": user_id})
     if user and user.get("verified_until", datetime.min) > datetime.now():
+        logger.info(f"User {user_id} is verified until {user.get('verified_until')}")
         return True
+    if user:
+        logger.info(f"User {user_id} verification expired or not found - last expiry: {user.get('verified_until', 'never')}")
+    else:
+        logger.info(f"User {user_id} not found in database")
     return False
 
 async def get_token(user_id: int, bot_username: str) -> str:
@@ -493,14 +522,27 @@ async def get_token(user_id: int, bot_username: str) -> str:
     # Update user's verification status in database
     users_collection.update_one(
         {"user_id": user_id},
-        {"$set": {"token": token, "token_expiration": token_expiration, "verified_until": datetime.min}},  # Reset verified_until to min
+        {"$set": {
+            "token": token, 
+            "token_expiration": token_expiration, 
+            "verified_until": datetime.min
+        }},  # Reset verified_until to min
         upsert=True
     )
-    # Create verification link with get_token parameter for direct token display
-    verification_link = f"https://telegram.me/{bot_username}?start=get_token"
+    # Log token generation for debugging
+    logger.info(f"Generated token for user {user_id}: {token}")
+    
+    # Create verification link with the actual token for verification
+    verification_link = f"https://telegram.me/{bot_username}?start={token}"
+    
     # Shorten verification link using shorten_url_link function
-    shortened_link = shorten_url_link(verification_link)
-    return shortened_link
+    try:
+        shortened_link = shorten_url_link(verification_link)
+        logger.info(f"Shortened verification link generated for user {user_id}")
+        return shortened_link
+    except Exception as e:
+        logger.error(f"Failed to shorten URL, using original link: {e}")
+        return verification_link
 
 def shorten_url_link(url):
     api_url = 'https://arolinks.com/api'
@@ -510,6 +552,8 @@ def shorten_url_link(url):
         'url': url
     }
     
+    logger.info(f"Attempting to shorten URL via Arolinks API")
+    
     try:
         # Use custom certificate bundle for SSL verification
         cert_path = os.path.join("certificates", "ca-bundle.crt")
@@ -517,22 +561,35 @@ def shorten_url_link(url):
         # Check if certificate file exists
         if os.path.exists(cert_path):
             # Set verify to the custom certificate bundle path
-            response = requests.get(api_url, params=params, verify=cert_path)
+            logger.info(f"Using custom certificate bundle at {cert_path}")
+            response = requests.get(api_url, params=params, verify=cert_path, timeout=10)
         else:
             logger.warning(f"Certificate file not found at {cert_path}, using default verification")
-            response = requests.get(api_url, params=params)
+            response = requests.get(api_url, params=params, timeout=10)
             
         if response.status_code == 200:
-            data = response.json()
-            if data['status'] == 'success':
-                logger.info(f"Arolinks shortened URL: {data['shortenedUrl']}")
-                return data['shortenedUrl']
+            try:
+                data = response.json()
+                if data and isinstance(data, dict) and data.get('status') == 'success' and 'shortenedUrl' in data:
+                    logger.info(f"Arolinks shortened URL successfully")
+                    return data['shortenedUrl']
+                else:
+                    logger.error(f"Invalid response format from Arolinks API: {data}")
+            except ValueError as e:
+                logger.error(f"Failed to parse JSON response: {e}")
+        else:
+            logger.error(f"Arolinks API returned status code {response.status_code}")
+            
     except requests.exceptions.SSLError as ssl_error:
         logger.error(f"SSL Certificate error: {ssl_error}")
+    except requests.exceptions.Timeout:
+        logger.error("Request to Arolinks API timed out")
+    except requests.exceptions.ConnectionError:
+        logger.error("Connection error when calling Arolinks API")
     except Exception as e:
         logger.error(f"Error shortening URL: {e}")
     
-    logger.error(f"Failed to shorten URL with Arolinks: {url}")
+    logger.warning(f"Failed to shorten URL with Arolinks, returning original URL")
     return url
 
 
