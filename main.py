@@ -533,7 +533,7 @@ async def get_token(user_id: int, bot_username: str) -> str:
     logger.info(f"Generated token for user {user_id}: {token}")
     
     # Create verification link with the actual token for verification
-    verification_link = f"https://telegram.me/{bot_username}?start={token}"
+    verification_link = f"https://t.me/Short_Link_BypassBot?start={token}"
     
     # Shorten verification link using shorten_url_link function
     try:
