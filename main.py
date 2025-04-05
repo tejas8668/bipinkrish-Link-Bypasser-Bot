@@ -61,6 +61,7 @@ with app:
         [
             BotCommand("start", "Welcome Message"),
             BotCommand("help", "List of All Supported Sites"),
+            BotCommand("token", "Check Your Token Status"),
         ]
     )
 
@@ -323,16 +324,20 @@ async def stats(client: Client, message: Message):
             # Calculate used storage
             used_storage_mb = db_stats['dataSize'] / (1024 ** 2)  # Convert bytes to MB
 
-            # Total MongoDB storage
-            total_storage_mb = 512  # Total MongoDB storage in MB
-            free_storage_mb = total_storage_mb - used_storage_mb
+            # Calculate total and free storage (if available)
+            if 'fsTotalSize' in db_stats:
+                total_storage_mb = db_stats['fsTotalSize'] / (1024 ** 2)  # Convert bytes to MB
+                free_storage_mb = total_storage_mb - used_storage_mb
+            else:
+                total_storage_mb = "N/A"
+                free_storage_mb = "N/A"
 
             # Prepare the response message
             message_text = (
                 f"📊 **Bot Statistics**\n\n"
                 f"👥 **Total Users:** {total_users}\n"
                 f"💾 **MongoDB Used Storage:** {used_storage_mb:.2f} MB\n"
-                f"🆓 **MongoDB Free Storage:** {free_storage_mb:.2f} MB\n"
+                f"🆓 **MongoDB Free Storage:** {free_storage_mb if isinstance(free_storage_mb, str) else f'{free_storage_mb:.2f} MB'}\n"
             )
 
             await message.reply_text(message_text)
@@ -341,6 +346,44 @@ async def stats(client: Client, message: Message):
             await message.reply_text("❌ An error occurred while fetching stats.")
     else:
         await message.reply_text("You have no rights to use my commands.")
+        
+# token command
+@app.on_message(filters.command(["token"]))
+async def token_command(client: Client, message: Message):
+    user_id = message.from_user.id
+    user_data = users_collection.find_one({"user_id": user_id})
+    
+    if user_data and user_data.get("verified_until", datetime.min) > datetime.now():
+        # User has a valid token
+        verified_until = user_data.get("verified_until")
+        time_left = verified_until - datetime.now()
+        hours, remainder = divmod(time_left.seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        
+        await message.reply_text(
+            f"✅ **You have a valid token!**\n\n"
+            f"Your token is active and will expire on:\n"
+            f"📅 {verified_until.strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+            f"⏱️ Time remaining: {time_left.days} days, {hours} hours, {minutes} minutes"
+        )
+    else:
+        # User needs to verify
+        bot_username = (await client.get_me()).username
+        token_url = await get_token(user_id, bot_username)
+        
+        btn = [
+            [InlineKeyboardButton("Verify Now", url=token_url)],
+            [InlineKeyboardButton("How To Open Link & Verify", url="https://t.me/how_to_download_0011")]
+        ]
+        
+        await message.reply_text(
+            text="❌ **You don't have an active token!**\n\n"
+                 "To use the bot, you need to verify your token.\n\n"
+                 "🔑 Why Tokens?\n"
+                 "Tokens unlock premium features with a quick ad process. Enjoy 24 hours of uninterrupted access! 🌟\n\n"
+                 "👉 Tap below to verify your token.",
+            reply_markup=InlineKeyboardMarkup(btn)
+        )
 
 # callback query handler
 @app.on_callback_query(filters.regex("send_help"))
@@ -464,43 +507,6 @@ def shorten_url_link(url):
     return url
 
 
-# stats command
-@app.on_message(filters.command(["stats"]))
-async def stats(client: Client, message: Message):
-    if message.from_user.id in admin_ids:
-        try:
-            # Get total users
-            total_users = users_collection.count_documents({})
-
-            # Get MongoDB database stats
-            db_stats = db.command("dbstats")
-
-            # Calculate used storage
-            used_storage_mb = db_stats['dataSize'] / (1024 ** 2)  # Convert bytes to MB
-
-            # Calculate total and free storage (if available)
-            if 'fsTotalSize' in db_stats:
-                total_storage_mb = db_stats['fsTotalSize'] / (1024 ** 2)  # Convert bytes to MB
-                free_storage_mb = total_storage_mb - used_storage_mb
-            else:
-                total_storage_mb = "N/A"
-                free_storage_mb = "N/A"
-
-            # Prepare the response message
-            message_text = (
-                f"📊 **Bot Statistics**\n\n"
-                f"👥 **Total Users:** {total_users}\n"
-                f"💾 **MongoDB Used Storage:** {used_storage_mb:.2f} MB\n"
-                f"🆓 **MongoDB Free Storage:** {free_storage_mb if isinstance(free_storage_mb, str) else f'{free_storage_mb:.2f} MB'}\n"
-            )
-
-            await message.reply_text(message_text)
-        except Exception as e:
-            logger.error(f"Error fetching stats: {e}")
-            await message.reply_text("❌ An error occurred while fetching stats.")
-    else:
-        await message.reply_text("You have no rights to use my commands.")
-        
 # doc thread
 def docthread(message: Message):
     msg: Message = app.send_message(
