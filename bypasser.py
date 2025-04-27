@@ -2805,7 +2805,7 @@ def Seturl_in(url, retry=False):
     url = url[:-1] if url[-1] == "/" else url
     code = url.split("/")[-1]
     final_url = f"{DOMAIN}/{code}"
-    ref = "https://loan.creditsgoal.com/"
+    ref = "https://wahanmitra24.com/"
     h = {"referer": ref}
     
     try:
@@ -2822,7 +2822,7 @@ def Seturl_in(url, retry=False):
             print(f"Error occurred: {e}. Retrying...")
             return Seturl_in(url, retry=True)
         else:
-            return "Something went wrong, Please Wait For Few Seconds and try again..."
+            return "Fail To Bypass Try Our Website Link In Bot Bio"
 
 
 # check if present in list
