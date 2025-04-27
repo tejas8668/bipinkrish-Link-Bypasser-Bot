@@ -2882,9 +2882,7 @@ def Short2url(url):
             return r.json()["url"]
         else:
             return "Fail To Bypass Try Our Website Link In Bot Bio"
-
-
-# check if present in list
+            
 def ispresent(inlist, url):
     for ele in inlist:
         if ele in url:
