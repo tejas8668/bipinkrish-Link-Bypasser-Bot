@@ -3248,10 +3248,6 @@ def shortners(url):
         print("entered brieflyurl:", url)
         return Short2url(url)
 
-    elif "https://just2earn.com/" in url:
-        print("entered brieflyurl:", url)
-        return "Fail To Bypass Try Our Website Link In Bot Bio"
-
 
 
 
