@@ -2883,11 +2883,11 @@ def Short2url(url):
         else:
             return "Fail To Bypass Try Our Website Link In Bot Bio"
             
-def ispresent(inlist, url):
+'''def ispresent(inlist, url):
     for ele in inlist:
         if ele in url:
             return True
-    return False
+    return False'''
 
 
 # shortners
