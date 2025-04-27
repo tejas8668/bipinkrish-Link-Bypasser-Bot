@@ -2855,7 +2855,7 @@ def yorurl_com(url):
     except Exception as e:
         return "Fail To Bypass Try Our Website Link In Bot Bio"
 
-def Short2url(url):
+'''def Short2url(url):
     try:
         time.sleep(delay)
         client = cloudscraper.create_scraper(allow_brotli=False)
@@ -2881,13 +2881,13 @@ def Short2url(url):
         if r.status_code == 200:
             return r.json()["url"]
         else:
-            return "Fail To Bypass Try Our Website Link In Bot Bio"
+            return "Fail To Bypass Try Our Website Link In Bot Bio"'''
             
-#def ispresent(inlist, url):
-    #for ele in inlist:
-        #if ele in url:
-            #return True
-    #return False
+def ispresent(inlist, url):
+    for ele in inlist:
+        if ele in url:
+            return True
+    return False
 
 
 # shortners
