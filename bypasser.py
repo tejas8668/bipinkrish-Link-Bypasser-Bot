@@ -2824,6 +2824,37 @@ def Seturl_in(url, retry=False):
         else:
             return "Fail To Bypass Try Our Website Link In Bot Bio"
 
+def yorurl_com(url):
+    try:
+        time.sleep(delay)
+        client = cloudscraper.create_scraper(allow_brotli=False)
+        DOMAIN = "https://go.yorurl.com/"
+        url = url[:-1] if url[-1] == "/" else url
+        code = url.split("/")[-1]
+        final_url = f"{DOMAIN}/{code}"
+        ref = "https://financebolo.com/"
+        h = {"referer": ref}
+
+        resp = client.get(final_url, headers=h)
+        if resp.status_code != 200:
+            return "Fail To Bypass Try Our Website Link In Bot Bio"
+
+        soup = BeautifulSoup(resp.content, "html.parser")
+        inputs = soup.find_all("input")
+        data = {input.get("name"): input.get("value") for input in inputs}
+        h = {"x-requested-with": "XMLHttpRequest"}
+
+        time.sleep(8)
+        r = client.post(f"{DOMAIN}/links/go", data=data, headers=h)
+
+        if r.status_code == 200:
+            return r.json()["url"]
+        else:
+            return "Fail To Bypass Try Our Website Link In Bot Bio"
+
+    except Exception as e:
+        return "Fail To Bypass Try Our Website Link In Bot Bio"
+
 
 # check if present in list
 def ispresent(inlist, url):
@@ -3180,6 +3211,10 @@ def shortners(url):
     elif "https://seturl.in/" in url:
         print("entered brieflyurl:", url)
         return Seturl_in(url)
+
+    elif "https://yorurl.com/" in url:
+        print("entered brieflyurl:", url)
+        return yorurl_com(url)
 
 
 
