@@ -2883,34 +2883,6 @@ def Short2url(url):
         else:
             return "Fail To Bypass Try Our Website Link In Bot Bio"
 
-def just2earn(url):
-    try:
-        time.sleep(delay)
-        client = cloudscraper.create_scraper(allow_brotli=False)
-        DOMAIN = "https://go.just2earn.com/" #https://link.short2url.in/s8vct
-        url = url[:-1] if url[-1] == "/" else url
-        code = url.split("/")[-1]
-        final_url = f"{DOMAIN}/{code}"
-        ref = "https://dvjobs.in/"
-        h = {"referer": ref}
-
-        resp = client.get(final_url, headers=h)
-        if resp.status_code != 200:
-            return "Fail To Bypass Try Our Website Link In Bot Bio"
-
-        soup = BeautifulSoup(resp.content, "html.parser")
-        inputs = soup.find_all("input")
-        data = {input.get("name"): input.get("value") for input in inputs}
-        h = {"x-requested-with": "XMLHttpRequest"}
-
-        time.sleep(8)
-        r = client.post(f"{DOMAIN}/links/go", data=data, headers=h)
-
-        if r.status_code == 200:
-            return r.json()["url"]
-        else:
-            return "Fail To Bypass Try Our Website Link In Bot Bio"
-
 
 # check if present in list
 def ispresent(inlist, url):
@@ -3278,7 +3250,7 @@ def shortners(url):
 
     elif "https://just2earn.com/" in url:
         print("entered brieflyurl:", url)
-        return just2earn(url)
+        return "Fail To Bypass Try Our Website Link In Bot Bio"
 
 
 
