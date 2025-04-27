@@ -2529,7 +2529,7 @@ def runurl(url):
         return "Something went wrong :("
 
 #modijiurl bypass 
-'''def modijiurl(url: str):
+def bypass_modijiurl(url: str):
     client = cloudscraper.create_scraper(allow_brotli=False)
     token = url.split("/")[-1]
     domain = "https://modijiurl.com/"
@@ -2548,10 +2548,10 @@ def runurl(url):
     try:
         return bypassed_url
     except:
-        return "Something went wrong :("'''
+        return "Fail To Bypass Try Our Website Link In Bot Bio"
 
 
-def bypass_modijiurl(url: str):
+'''def bypass_modijiurl(url: str):
     def is_valid_url(url):
         return re.match(r'^(?:https?|ftp):\/\/(?:\w+\.){1,3}\w+(?:\/\S*)?$', url) is not None
 
@@ -2581,7 +2581,7 @@ def bypass_modijiurl(url: str):
         try:
             return bypassed_url
         except:
-            return "Something went wrong :("
+            return "Something went wrong :("'''
             
 #primeurl.in bypass
 def primeurl(url):
